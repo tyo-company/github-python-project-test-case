@@ -58,6 +58,9 @@ jobs:
       # Import coverage report to SonarQube
       - name: Import coverage report to SonarQube
         uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
             -Dsonar.coverage.reportPaths=coverage.xml
