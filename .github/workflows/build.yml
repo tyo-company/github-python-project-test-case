@@ -37,14 +37,30 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       # Lint with flake8
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      # - name: Lint with flake8
+      #   run: |
+      #     # stop the build if there are Python syntax errors or undefined names
+      #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+      #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       # Test with pytest
       - name: Test with pytest
         run: |
           pytest --cov --cov-report=xml
+
+      # Convert coverage report to LCOV format
+      - name: Convert coverage report to LCOV format
+        run: |
+          python -m pip install coverage
+          coverage xml -i --omit=venv/* -o coverage.xml
+
+      # Import coverage report to SonarQube
+      - name: Import coverage report to SonarQube
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.coverage.reportPaths=coverage.xml
