@@ -32,7 +32,7 @@ class TestConditionalProcessor(unittest.TestCase):
 
     def test_process_for_1(self):
         self.assertEqual(self.processor.process(1), "Processed for 1")
-        This test covers the condition for x == 1.
+        # This test covers the condition for x == 1.
 
     def test_process_for_3(self):
         self.assertEqual(self.processor.process(3), "Processed for 3")
