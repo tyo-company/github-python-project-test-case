@@ -1,4 +1,4 @@
-name: Build with SonarQube and Python
+name: Build with SonarCloud and Python
 
 on:
   push:
@@ -16,13 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Set up SonarQube scan
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
       # Set up Python 3.10
       - name: Set up Python 3.10
         uses: actions/setup-python@v3
@@ -37,12 +30,12 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       # Lint with flake8
-      # - name: Lint with flake8
-      #   run: |
-      #     # stop the build if there are Python syntax errors or undefined names
-      #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-      #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-      #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       # Test with pytest
       - name: Test with pytest
@@ -55,12 +48,14 @@ jobs:
           python -m pip install coverage
           coverage xml -i --omit=venv/* -o coverage.xml
 
-      # Import coverage report to SonarQube
-      - name: Import coverage report to SonarQube
-        uses: sonarsource/sonarqube-scan-action@master
+      # Set up SonarCloud
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.coverage.reportPaths=coverage.xml
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.python.coverage.reportPaths=coverage.xml
